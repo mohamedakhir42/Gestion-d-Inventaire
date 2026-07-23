@@ -1,0 +1,10 @@
+# Python settings
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+extend-ignore = ["E203"]
