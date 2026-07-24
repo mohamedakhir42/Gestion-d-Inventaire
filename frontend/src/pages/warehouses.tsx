@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { useWarehouses } from "@/services/api/hooks"
 import { useState } from "react"
-import { Search, Plus, MapPin, Package } from "lucide-react"
+import { Search, Plus, MapPin } from "lucide-react"
 
 export function WarehousesPage() {
   const { data: warehouses } = useWarehouses()

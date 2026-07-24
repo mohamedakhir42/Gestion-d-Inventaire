@@ -1,12 +1,27 @@
 // User & Auth Types
+export type UserRole =
+  | "SUPER_ADMIN"
+  | "ADMINISTRATOR"
+  | "WAREHOUSE_MANAGER"
+  | "WAREHOUSE_OPERATOR"
+  | "MAINTENANCE_MANAGER"
+  | "TECHNICIAN"
+  | "VIEWER"
+
+export type UserStatus = "PENDING" | "ACTIVE" | "SUSPENDED" | "DEACTIVATED"
+
 export interface User {
   id: string
   email: string
   firstName: string
   lastName: string
+  fullName: string
   avatar?: string
-  role: "admin" | "manager" | "user" | "viewer"
+  role: UserRole
+  status: UserStatus
   department?: string
+  position?: string
+  employeeId?: string
   createdAt: string
   updatedAt: string
 }
@@ -39,10 +54,17 @@ export interface Product {
 export interface InventoryItem {
   id: string
   productId: string
+  productName: string
+  sku: string
   warehouseId: string
   locationId: string
   quantity: number
   reservedQuantity: number
+  currentStock: number
+  minimumLevel: number
+  maximumLevel: number
+  unitPrice: number
+  status: "critical" | "low" | "optimal" | "overstock"
   lastChecked: string
   expiryDate?: string
 }
@@ -55,9 +77,14 @@ export interface Warehouse {
   address: string
   city: string
   country: string
+  /** Display-friendly "City, Country" string used in list/table views. */
+  location: string
   capacity: number
   currentLoad: number
+  /** Percentage of capacity in use (0-100), derived from currentLoad/capacity. */
+  utilization: number
   manager: string
+  status: "active" | "inactive"
   zones: Zone[]
   createdAt: string
   updatedAt: string
@@ -142,6 +169,7 @@ export interface Supplier {
 export interface Employee {
   id: string
   userId: string
+  name: string
   firstName: string
   lastName: string
   email: string
@@ -149,6 +177,8 @@ export interface Employee {
   department: string
   position: string
   avatar?: string
+  status: "active" | "on_leave" | "inactive"
+  warehouseAssignment?: string
   createdAt: string
   updatedAt: string
 }
