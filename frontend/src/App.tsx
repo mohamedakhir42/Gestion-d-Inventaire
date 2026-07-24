@@ -6,6 +6,9 @@ import { LoginPage } from "@/pages/auth/login"
 import { DashboardPage } from "@/pages/dashboard"
 import { InventoryPage } from "@/pages/inventory"
 import { ProductsPage } from "@/pages/products"
+import { WarehousesPage } from "@/pages/warehouses"
+import { StockLevelsPage } from "@/pages/stock-levels"
+import { EmployeesPage } from "@/pages/employees"
 
 function App() {
   return (
@@ -37,6 +40,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProductsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/warehouses"
+            element={
+              <ProtectedRoute>
+                <WarehousesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stock-levels"
+            element={
+              <ProtectedRoute>
+                <StockLevelsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employees"
+            element={
+              <ProtectedRoute>
+                <EmployeesPage />
               </ProtectedRoute>
             }
           />
