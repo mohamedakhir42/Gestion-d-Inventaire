@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useEmployees } from "@/services/api/hooks"
 import { useState } from "react"
-import { Search, Plus, Mail, Phone, MapPin } from "lucide-react"
+import { Search, Plus, Mail, Phone } from "lucide-react"
 
 export function EmployeesPage() {
   const { data: employees } = useEmployees()

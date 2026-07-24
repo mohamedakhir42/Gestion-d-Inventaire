@@ -1,11 +1,25 @@
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { apiClient, tokenStorage, ApiError } from "@/lib/api-client"
 import type { User, AuthState } from "@/types"
+
+interface LoginResponse {
+  access: string
+  refresh: string
+  user: User
+}
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
+  /**
+   * The backend has no public self-registration endpoint (accounts are
+   * created by an admin and activated via invitation), so this always
+   * rejects. Kept so the signup UI can surface a clear message instead
+   * of silently faking an account.
+   */
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>
   updateUser: (user: User) => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -17,97 +31,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading: true,
   })
 
-  // Check if user is logged in on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      try {
-        setState({
-          isAuthenticated: true,
-          user: JSON.parse(storedUser),
-          loading: false,
-        })
-      } catch (error) {
-        console.error("Failed to parse stored user", error)
-        setState({ isAuthenticated: false, user: null, loading: false })
-      }
-    } else {
+  const loadCurrentUser = useCallback(async () => {
+    if (!tokenStorage.getAccess()) {
+      setState({ isAuthenticated: false, user: null, loading: false })
+      return
+    }
+    try {
+      const user = await apiClient.get<User>("/auth/me/")
+      setState({ isAuthenticated: true, user, loading: false })
+    } catch (error) {
+      tokenStorage.clear()
       setState({ isAuthenticated: false, user: null, loading: false })
     }
   }, [])
 
+  // On mount, if we have a stored access token, validate it against the
+  // backend and load the current user's profile.
+  useEffect(() => {
+    loadCurrentUser()
+  }, [loadCurrentUser])
+
   const login = async (email: string, password: string) => {
     setState((prev) => ({ ...prev, loading: true }))
     try {
-      // Mock API call - replace with real API
-      const mockUser: User = {
-        id: "1",
-        email,
-        firstName: "Admin",
-        lastName: "User",
-        role: "admin",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      localStorage.setItem("user", JSON.stringify(mockUser))
-      setState({
-        isAuthenticated: true,
-        user: mockUser,
-        loading: false,
-      })
+      const data = await apiClient.post<LoginResponse>(
+        "/auth/login/",
+        { email, password },
+        { skipAuth: true }
+      )
+      tokenStorage.setTokens(data.access, data.refresh)
+      setState({ isAuthenticated: true, user: data.user, loading: false })
     } catch (error) {
-      console.error("Login failed", error)
       setState({ isAuthenticated: false, user: null, loading: false })
-      throw error
+      if (error instanceof ApiError) throw error
+      throw new Error("Login failed")
     }
   }
 
-  const logout = () => {
-    localStorage.removeItem("user")
-    setState({
-      isAuthenticated: false,
-      user: null,
-      loading: false,
-    })
-  }
-
-  const register = async (email: string, password: string, firstName: string, lastName: string) => {
-    setState((prev) => ({ ...prev, loading: true }))
+  const logout = async () => {
+    const refresh = tokenStorage.getRefresh()
     try {
-      // Mock API call - replace with real API
-      const newUser: User = {
-        id: Math.random().toString(),
-        email,
-        firstName,
-        lastName,
-        role: "user",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      if (refresh) {
+        await apiClient.post("/auth/logout/", { refresh })
       }
-      localStorage.setItem("user", JSON.stringify(newUser))
-      setState({
-        isAuthenticated: true,
-        user: newUser,
-        loading: false,
-      })
     } catch (error) {
-      console.error("Registration failed", error)
+      // Even if the backend call fails (token already expired, network
+      // issue, etc.), we still want to clear local state.
+    } finally {
+      tokenStorage.clear()
       setState({ isAuthenticated: false, user: null, loading: false })
-      throw error
     }
+  }
+
+  const register = async () => {
+    throw new Error(
+      "Self-registration is not available. Accounts are created by an administrator and activated by invitation."
+    )
   }
 
   const updateUser = (user: User) => {
-    localStorage.setItem("user", JSON.stringify(user))
-    setState({
-      isAuthenticated: true,
-      user,
-      loading: false,
-    })
+    setState((prev) => ({ ...prev, isAuthenticated: true, user }))
   }
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout, register, updateUser }}>
+    <AuthContext.Provider value={{ ...state, login, logout, register, updateUser, refreshUser: loadCurrentUser }}>
       {children}
     </AuthContext.Provider>
   )

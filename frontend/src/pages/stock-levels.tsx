@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { useInventoryItems } from "@/services/api/hooks"
 import { useState } from "react"
-import { Search, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react"
+import { Search, AlertTriangle, TrendingUp, TrendingDown, Package } from "lucide-react"
 
 export function StockLevelsPage() {
   const { data: inventory } = useInventoryItems()
@@ -19,10 +19,10 @@ export function StockLevelsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'critical': return 'destructive'
-      case 'low': return 'secondary'
-      case 'optimal': return 'default'
-      case 'overstock': return 'outline'
+      case 'critical': return 'error'
+      case 'low': return 'warning'
+      case 'optimal': return 'success'
+      case 'overstock': return 'info'
       default: return 'default'
     }
   }

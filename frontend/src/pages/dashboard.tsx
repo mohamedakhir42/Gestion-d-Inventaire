@@ -3,9 +3,6 @@ import {
   Bar,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -16,10 +13,9 @@ import {
 import { AlertCircle, TrendingUp, Package, Warehouse, Users, Clock } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { MainLayout } from "@/components/layouts/main-layout"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useDashboardStats, useLowStockItems } from "@/services/api/hooks"
-import { formatCurrency, formatDate } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 import { CHART_COLORS } from "@/lib/constants"
 
 // Chart data
@@ -44,14 +40,6 @@ const topProducts = [
   { name: "Fastener Kit", value: 320 },
   { name: "Pump Assembly", value: 280 },
   { name: "Conveyor Belt", value: 220 },
-]
-
-const COLORS = [
-  CHART_COLORS.primary,
-  CHART_COLORS.secondary,
-  CHART_COLORS.accent,
-  CHART_COLORS.warning,
-  CHART_COLORS.info,
 ]
 
 function StatCard({
